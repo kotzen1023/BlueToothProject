@@ -220,6 +220,7 @@ public class BluetoothChatService {
      * @see ConnectedThread#write(byte[])
      */
     public void write(byte[] out) {
+        Log.d(TAG, "=== ConnectedThread.write start ===");
         // Create temporary object
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
@@ -229,6 +230,7 @@ public class BluetoothChatService {
         }
         // Perform the write unsynchronized
         r.write(out);
+        Log.d(TAG, "=== ConnectedThread.write end ===");
     }
 
     /**
@@ -484,6 +486,9 @@ public class BluetoothChatService {
          * @param buffer The bytes to write
          */
         public void write(byte[] buffer) {
+
+            Log.d(TAG, "Inside of write..."+buffer.length);
+
             try {
                 mmOutStream.write(buffer);
 

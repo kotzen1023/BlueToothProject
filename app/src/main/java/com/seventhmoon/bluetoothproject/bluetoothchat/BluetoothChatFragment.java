@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,6 +31,8 @@ import android.widget.Toast;
 import com.seventhmoon.bluetoothproject.R;
 import com.seventhmoon.bluetoothproject.common.logger.Log;
 
+import java.io.ByteArrayOutputStream;
+
 public class BluetoothChatFragment extends Fragment {
     private static final String TAG = "BluetoothChatFragment";
 
@@ -41,6 +45,7 @@ public class BluetoothChatFragment extends Fragment {
     private ListView mConversationView;
     private EditText mOutEditText;
     private Button mSendButton;
+    private Button mSendImage;
 
     /**
      * Name of the connected device
@@ -133,6 +138,7 @@ public class BluetoothChatFragment extends Fragment {
         mConversationView = (ListView) view.findViewById(R.id.in);
         mOutEditText = (EditText) view.findViewById(R.id.edit_text_out);
         mSendButton = (Button) view.findViewById(R.id.button_send);
+        mSendImage = (Button) view.findViewById(R.id.btnSendImage);
     }
 
     /**
@@ -159,6 +165,18 @@ public class BluetoothChatFragment extends Fragment {
                     String message = textView.getText().toString();
                     sendMessage(message);
                 }
+            }
+        });
+
+        mSendImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        sendImage();
+                    }
+                }.start();
             }
         });
 
@@ -203,6 +221,32 @@ public class BluetoothChatFragment extends Fragment {
             mOutStringBuffer.setLength(0);
             mOutEditText.setText(mOutStringBuffer);
         }
+    }
+
+    /**
+     * Sends an Image.
+     *
+     * @param
+     */
+    private void sendImage() {
+        // Check that we're actually connected before trying anything
+        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
+            Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.hand_512_black);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100,baos); //bm is the bitmap object
+        byte[] send = baos.toByteArray();
+
+        Log.d(TAG, "send bytes = "+send.length+" bytes");
+
+        mChatService.write(send);
+
+        // Reset out string buffer to zero and clear the edit text field
+        //mOutStringBuffer.setLength(0);
+        //mOutEditText.setText(mOutStringBuffer);
     }
 
     /**
